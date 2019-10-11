@@ -145,7 +145,7 @@ def connect(module):
                        protocol=module.params['protocol'],
                        port=module.params['port'],
                        )
-    except CvpLoginError, e:
+    except CvpLoginError as e:
         module.fail_json(msg=str(e))
 
     return client
@@ -218,7 +218,7 @@ def main():
             result['taskIDs'] = changed[1]
         else:
             result['data'] = changed[1]
-    except CvpApiError, e:
+    except CvpApiError as e:
         module.fail_json(msg=str(e))
 
     module.exit_json(**result)
