@@ -33,8 +33,8 @@
 #
 
 from ansible.module_utils.basic import AnsibleModule
-from cvprac.cvp_client import CvpClient
-from cvprac.cvp_client_errors import CvpLoginError, CvpApiError
+from ansible.module_utils.cvprac.cvp_client import CvpClient
+from ansible.module_utils.cvprac.cvp_client_errors import CvpLoginError, CvpApiError
 
 import re
 import time
