@@ -370,7 +370,7 @@ def connect(module):
                        protocol=module.params['protocol'],
                        port=module.params['port'],
                        )
-    except CvpLoginError, e:
+    except CvpLoginError as e:
         module.fail_json(msg=str(e))
 
     return client
@@ -843,7 +843,7 @@ def main():
         if deletion_process[0]:
             result['cv_container']['changed'] = True
             result['cv_container']['deletion_result'] = deletion_process[1]
-    except CvpApiError, e:
+    except CvpApiError as e:
         module.fail_json(msg=str(e))
     module.exit_json(**result)
 
