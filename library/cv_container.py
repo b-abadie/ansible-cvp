@@ -141,7 +141,7 @@ from ansible.module_utils.legacy_cvp.cvp_client_errors import CvpLoginError, Cvp
 from treelib import Node, Tree
 import json
 
-def tree_to_list(json_data, myList):
+def tree_to_list(json_data, myList, starting = True):
     """
     Transform a tree structure into a list of object to create CVP.
 
@@ -167,7 +167,7 @@ def tree_to_list(json_data, myList):
         Ordered list of element to create on CVP
     """
     # Cast input to be encoded as JSON structure.
-    if isinstance(json_data,str):
+    if isinstance(json_data,str) and starting:
         json_data = json.loads(json_data)
     # If it is a dictionary object, 
     # it means we have to go through it to extract content
@@ -182,13 +182,13 @@ def tree_to_list(json_data, myList):
                         myList.append(k1)
                         for e in v2:
                             # Move to next element with a recursion
-                            tree_to_list(json_data=e, myList=myList)
+                            tree_to_list(json_data=e, myList=myList, starting=False)
     # We are facing a end of a branch with a list of leaves.
     elif isinstance(json_data, list):
         for entry in json_data:
             myList.append(entry)
     # We are facing a end of a branch with a single leaf.
-    elif isinstance(json_data, basestring):
+    elif isinstance(json_data, str):
         myList.append(json_data)
     return myList
 
