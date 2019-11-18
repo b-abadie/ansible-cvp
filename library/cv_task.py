@@ -127,7 +127,10 @@ def get_id(task):
     return task.get("taskNo")
 
 def get_state(task):
-    return task.get("displayedStutus")
+    state = task.get("displayedStutus")
+    if state is None:
+        state = task.get("workOrderUserDefinedStatus")  # cv_facts and update_all_tasks() do not return the same structure
+    return state
 
 def execute_task(cvp, task_id):
     return cvp.execute_task(task_id)
