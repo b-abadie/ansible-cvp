@@ -128,7 +128,7 @@ from time import sleep
 # Required by compare function
 import difflib
 
-def compare(fromText, toText, lines=10):
+def compare(fromText, toText, fromName='', toName='', lines=10):
     """ Compare text string in 'fromText' with 'toText' and produce
         diffRatio - a score as a float in the range [0, 1] 2.0*M / T
           T is the total number of elements in both sequences,
@@ -143,7 +143,7 @@ def compare(fromText, toText, lines=10):
     """
     fromlines = fromText.splitlines(1)
     tolines = toText.splitlines(1)
-    diff = list(difflib.unified_diff(fromlines, tolines,n=lines))
+    diff = list(difflib.unified_diff(fromlines, tolines, fromName, toName, n=lines))
     textComp = difflib.SequenceMatcher(None, fromText, toText)
     diffRatio = round( textComp.quick_ratio()*100, 2)
     return [diffRatio,diff]
@@ -185,6 +185,7 @@ def configlet_action(module):
     new_configlet = [] # configlets to add to CVP
     new = []
     taskList = [] # Tasks that have a pending status after function runs
+    diff = ""
 
     for configlet in module.params['cvp_facts']['configlets']:
         # Only deal with Static configlets not Configletbuilders or
@@ -196,12 +197,12 @@ def configlet_action(module):
                 any(element in configlet['name'] for element in module.params['configlet_filter'])):
                 if configlet['name'] in module.params['configlets']:
                     ansible_configlet = module.params['configlets'][configlet['name']]
-                    configlet_compare = compare(configlet['config'],ansible_configlet)
+                    configlet_compare = compare(configlet['config'],ansible_configlet, 'CVP', 'Ansible')
                     # compare function returns a floating point number
                     if configlet_compare[0] == 100.0:
                         keep_configlet.append(configlet)
                     else:
-                        update_configlet.append({'data':configlet,'config':ansible_configlet})
+                        update_configlet.append({'data':configlet,'config':ansible_configlet,'diff':''.join(configlet_compare[1])})
                 else:
                     delete_configlet.append(configlet)
     # Look for new configlets, if a configlet is not CVP assume it is to be created
@@ -253,6 +254,7 @@ def configlet_action(module):
                     module.client.api.add_note_to_configlet(configlet['data']['key'],"## Managed by Ansible ##")
                     changed = True
                     updated.append({configlet['data']['name']:"success"})
+                    diff += configlet['data']['name'] + ":\n" + configlet['diff'] + "\n\n"
 
         # Add any new configlets as required
         if len(new_configlet) > 0:
@@ -294,12 +296,16 @@ def configlet_action(module):
     else:
         for configlet in new_configlet:
             new.append({configlet['name']:"checked"})
+            changed = True
         for configlet in update_configlet:
             updated.append({configlet['data']['name']:"checked"})
+            changed = True
+            diff += configlet['data']['name'] + ":\n" + configlet['diff'] + "\n\n"
         for configlet in delete_configlet:
             deleted.append({configlet['name']:"checked"})
+            changed = True
         data = {'new':new,'updated':updated,'deleted':deleted,'tasks':taskList}
-    return [changed,data]
+    return [changed,data,diff]
 
 
 def main():
@@ -324,7 +330,9 @@ def main():
     module.client = connect(module)
 
     # Pass module params to configlet_action to act on configlet
-    result['changed'],result['data'] = configlet_action(module)
+    result['changed'],result['data'],diff = configlet_action(module)
+    if len(diff) > 0:
+      result['diff'] = {'prepared': diff}
     module.exit_json(**result)
 
 
