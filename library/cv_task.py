@@ -124,7 +124,10 @@ def connect(module):
     return client
 
 def get_id(task):
-    return task.get("taskNo")
+    task_id = task.get("taskNo")
+    if task_id is None:
+        task_id = task.get("workOrderId")
+    return task_id
 
 def get_state(task):
     state = task.get("displayedStutus")
@@ -223,6 +226,9 @@ def main():
     
     # Connect to CVP instance
     module.client = connect(module)
+
+    import sys
+    sys.stderr.write("\n>>>> " + module.params['tasks'].__repr__() + " <<<<\n")
 
     result['changed'],result['data'], warnings = task_action(module)
 
