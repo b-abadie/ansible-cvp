@@ -244,11 +244,11 @@ def configlet_action(module):
                 sleep(5)
               except Exception as error:
                 errorMessage = re.split(':', str(error))[-1]
-                message = "Configlet %s cannot be updated - %s"%(configlet['name'],errorMessage)
-                updated.append({configlet['name']:message})
+                message = "Configlet %s cannot be updated - %s"%(configlet['data']['name'],errorMessage)
+                updated.append({configlet['data']['name']:message})
               else:
                 if "errorMessage" in str(update_resp):
-                    message = "Configlet %s cannot be updated - %s"%(configlet['name'],update_resp['errorMessage'])
+                    message = "Configlet %s cannot be updated - %s"%(configlet['data']['name'],update_resp['errorMessage'])
                     updated.append({configlet['data']['name']:message})
                 else:
                     module.client.api.add_note_to_configlet(configlet['data']['key'],"## Managed by Ansible ##")
