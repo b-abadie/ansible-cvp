@@ -795,6 +795,8 @@ def attached_configlet_to_container(module, intended, facts):
         # If we have at least one configlet defined, then we can start process
         # Get CVP information for target container.
         container_info_cvp = container_info(container_name=container_name, module=module)
+        if "error" in container_info_cvp:
+            break
         container_info_facts = container_factinfo(container_name=container_name, facts=facts)
         if 'configlets' in container:
             # Extract list of configlet names
