@@ -310,8 +310,8 @@ class CvpClient(object):
             #     self.url_prefix = ('http://%s:%d/web'
             #                        % (host, self.port or 80))
             #     error = self._reset_session()
-            # if error is None:
-            #     break
+            if error is None:
+                break
             self.error_msg += '%s: %s\n' % (host, error)
 
     def _reset_session(self):
